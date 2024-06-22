@@ -1,9 +1,9 @@
-using CodeFirst.Data;
 using CodeFirst.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using CodeFirst.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

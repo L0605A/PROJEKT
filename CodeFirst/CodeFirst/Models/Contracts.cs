@@ -1,28 +1,31 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Numerics;
 
-namespace CodeFirst.Models;
-
-public class Contracts
+namespace CodeFirst.Models
 {
-    [Key]
-    public int IdContract { get; set; }
-    
-    [ForeignKey("Client")]
-    [Required]
-    public int IdClient { get; set; }
-    
-    [ForeignKey("Software")]
-    [Required]
-    public int IdSoftware { get; set; }
-    
-    [Required]
-    public string Name { get; set; } = string.Empty;
+    [Table("contracts")]
+    public class Contract
+    {
+        [Key]
+        public int IdContract { get; set; }
 
-    [Required]
-    public DateOnly DateFrom { get; set; }
-    
-    [Required] 
-    public BigInteger Price { get; set; }
+        [ForeignKey("Client")]
+        [Required]
+        public int IdClient { get; set; }
+        public Client Client { get; set; }
+
+        [ForeignKey("Software")]
+        [Required]
+        public int IdSoftware { get; set; }
+        public Software Software { get; set; }
+
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        public DateOnly DateFrom { get; set; }
+
+        [Required]
+        public decimal Price { get; set; }
+    }
 }
