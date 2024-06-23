@@ -19,6 +19,6 @@ namespace CodeFirst.Models
         public string Surname { get; set; } = string.Empty;
 
         [Required]
-        public BigInteger PESEL { get; set; }
+        public Decimal PESEL { get; set; }
     }
 }

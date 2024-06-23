@@ -1,64 +1,75 @@
-﻿namespace CodeFirst.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-public class PrescriptionRequestDto
+namespace CodeFirst.Models;
+
+public class DiscountDTO
 {
+        
+    [Required]
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+        
+    [Required]
+    [MaxLength(100)]
+    public string Offer { get; set; } = string.Empty;
+        
+    [Required]
+    public int Amt { get; set; }
+        
+    [Required]
+    public String DateFrom { get; set; }
+        
+    [Required]
+    public String DateTo { get; set; }
+
+}
+
+
+
+public class OneTimePaymentDTO
+{
+    public int IdClient { get; set; }
+    public int IdSoftware { get; set; }
+    public string Version { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+
+    public DateOnly DateFrom { get; set; }
+    public DateOnly DateTo { get; set; }
+    public decimal Price { get; set; }
+    public int UpdatePeriod { get; set; }
     
-    public int IdDoctor { get; set; }
-    public PatientDto Patient { get; set; }
-    public List<MedicamentDto> Medicaments { get; set; }
-    public DateTime Date { get; set; }
-    public DateTime DueDate { get; set; }
-
 }
 
-public class PatientDto
+public class OneTimePaymentResponseDTO
 {
-    public int IdPatient { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public DateTime BirthDate { get; set; }
-}
-
-
-
-public class MedicamentDto
-{
-    public int IdMedicament { get; set; }
-    public int Dose { get; set; }
-    public string Details { get; set; }
-}
-
-public class PatientResponseDTO
-{
-    public int IdPatient { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
+    public int IdContract { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public OneTimePaymentDTO oneTimePayment { get; set; }
     
-    public List<PrescriptionResponseDTO> Prescriptions { get; set; }
 }
 
-
-public class PrescriptionResponseDTO
+public class SubscriptionDTO
 {
-    public int IdPrescription { get; set; }
-    public DateTime Date { get; set; }
-    public DateTime DueDate { get; set; }
+    public int IdClient { get; set; }
+    public int IdSoftware { get; set; }
+    public string Version { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+
+    public DateOnly DateFrom { get; set; }
+    public decimal Price { get; set; }
     
-    public List<MedicamentResponseDTO> Medicaments { get; set; }
+    public int UpdatePeriod { get; set; }
     
-    public DoctorResponseDTO Doctor { get; set; }
+
+    [Required]
+    public int RenevalTimeInMonths { get; set; }
+    
+}
+public class SubscriptionResponseDTO
+{
+    public int IdContract { get; set; }
+    public SubscriptionDTO Subscription { get; set; }
+    
 }
 
-public class MedicamentResponseDTO
-{
-    public int IdMedicament { get; set; }
-    public String Name { get; set; }
-    public int? Dose { get; set; }
-    public String Description { get; set; }
-}
-
-public class DoctorResponseDTO
-{
-    public int IdDoctor { get; set; }
-    public String FirstName { get; set; }
-}

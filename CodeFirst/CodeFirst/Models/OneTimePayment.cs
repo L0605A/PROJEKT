@@ -11,11 +11,6 @@ namespace CodeFirst.Models
         public int IdContract { get; set; }
         public Contract Contract { get; set; }
 
-        [ForeignKey("Software")]
-        [Required]
-        public int IdSoftware { get; set; }
-        public Software Software { get; set; }
-
         [Required]
         public string Version { get; set; } = string.Empty;
 

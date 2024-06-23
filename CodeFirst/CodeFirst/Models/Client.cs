@@ -20,10 +20,11 @@ namespace CodeFirst.Models
 
         [Required]
         [Phone]
-        public BigInteger PhoneNumber { get; set; }
+        public Decimal PhoneNumber { get; set; }
 
         public PersonalClient PersonalClient { get; set; }
         public CorporateClient CorporateClient { get; set; }
         public ICollection<Contract> Contracts { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

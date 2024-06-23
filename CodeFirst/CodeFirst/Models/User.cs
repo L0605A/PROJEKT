@@ -13,7 +13,7 @@ namespace CodeFirst.Models
         [MaxLength(100)]
         public string PasswordHash { get; set; }
 
-        public string Permissions { get; set; }
+        public string Role { get; set; }
     
     }
 }

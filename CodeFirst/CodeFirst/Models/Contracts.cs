@@ -27,5 +27,8 @@ namespace CodeFirst.Models
 
         [Required]
         public decimal Price { get; set; }
+        
+        public OneTimePayment OneTimePayment { get; set; }
+        public Subscription Subscription { get; set; }
     }
 }

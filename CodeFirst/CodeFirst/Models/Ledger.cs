@@ -16,5 +16,8 @@ namespace CodeFirst.Models
 
         [Required]
         public decimal AmountPaid { get; set; }
+        
+        [Required]
+        public DateOnly PaidOn { get; set; }
     }
 }

@@ -7,7 +7,6 @@ namespace CodeFirst.Models
     public class Discount
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int IdDiscount { get; set; }
         
         [Required]

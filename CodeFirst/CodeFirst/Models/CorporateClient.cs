@@ -16,6 +16,6 @@ namespace CodeFirst.Models
         public string CorpoName { get; set; } = string.Empty;
 
         [Required]
-        public BigInteger KRS { get; set; }
+        public Decimal KRS { get; set; }
     }
 }
