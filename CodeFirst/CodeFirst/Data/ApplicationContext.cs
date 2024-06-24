@@ -61,8 +61,8 @@ namespace CodeFirst.Models
             
             
             modelBuilder.Entity<Client>().HasData(
-                new Client { IdClient = 1, Address = "123 Main St", Email = "client1@example.com", PhoneNumber = 1234567890 },
-                new Client { IdClient = 2, Address = "456 Elm St", Email = "client2@example.com", PhoneNumber = 9876543210 }
+                new Client { IdClient = 1, Address = "123 Main St", Email = "client1@example.com", PhoneNumber = "1234567890" },
+                new Client { IdClient = 2, Address = "456 Elm St", Email = "client2@example.com", PhoneNumber = "9876543210" }
             );
 
             modelBuilder.Entity<CorporateClient>().HasData(

@@ -8,12 +8,15 @@ namespace CodeFirst.Services
 {
     public interface IClientService
     {
+
+        Task<bool> ClientExists(int id);
         Task<IEnumerable<Client>> GetAllClientsAsync();
         Task<Client?> GetClientByIdAsync(int id);
-        Task AddClientAsync(Client client);
-        Task UpdateClientAsync(Client client);
+        Task AddPersonalClientAsync(PersonalClientDTO client);
+        Task AddCorporateClientAsync(CorpoClientDTO client);
+        Task UpdatePersonalClientAsync(int id, PersonalEditDTO client);
+        Task UpdateCorporateClientAsync(int id, CorpoEditDTO client);
         Task SoftDeleteClientAsync(int id);
-        Task HardDeleteClientAsync(int id);
     }
 
     public class ClientService : IClientService
@@ -23,6 +26,11 @@ namespace CodeFirst.Services
         public ClientService(ApplicationContext context)
         {
             _context = context;
+        }
+        
+        public async Task<bool> ClientExists(int id)
+        {
+            return await _context.Clients.AnyAsync(c => c.IdClient == id);
         }
 
         public async Task<IEnumerable<Client>> GetAllClientsAsync()
@@ -42,17 +50,102 @@ namespace CodeFirst.Services
                                  .FirstOrDefaultAsync(c => c.IdClient == id && !c.IsDeleted);
         }
 
-        public async Task AddClientAsync(Client client)
+        public async Task AddCorporateClientAsync(CorpoClientDTO client)
         {
-            _context.Clients.Add(client);
+            var clientTemp = new Client()
+            {
+                Address = client.Address,
+                Email = client.Email,
+                PhoneNumber = client.PhoneNumber,
+                IsDeleted = false
+            };
+            
+            await _context.Clients.AddAsync(clientTemp);
             await _context.SaveChangesAsync();
+
+            var corpoClient = new CorporateClient()
+            {
+                IdClient = clientTemp.IdClient,
+                Client = clientTemp,
+                CorpoName = client.CorpoName,
+                KRS = client.KRS
+            };
+
+            clientTemp.CorporateClient = corpoClient;
+            
+            await _context.CorporateClients.AddAsync(corpoClient);
+            
+            await _context.SaveChangesAsync();
+        }
+        
+        public async Task AddPersonalClientAsync(PersonalClientDTO client)
+        {
+            var clientTemp = new Client()
+            {
+                Address = client.Address,
+                Email = client.Email,
+                PhoneNumber = client.PhoneNumber,
+                IsDeleted = false
+            };
+            
+            await _context.Clients.AddAsync(clientTemp);
+            await _context.SaveChangesAsync();
+
+            var personalClient = new PersonalClient()
+            {
+                IdClient = clientTemp.IdClient,
+                Client = clientTemp,
+                Name = client.Name,
+                Surname = client.Surname,
+                PESEL = client.PESEL
+            };
+
+            clientTemp.PersonalClient = personalClient ;
+            
+            await _context.PersonalClients.AddAsync(personalClient);
+            
+            await _context.SaveChangesAsync();
+        }
+        
+        public async Task UpdatePersonalClientAsync(int id, PersonalEditDTO client)
+        {
+            var existingClient = await _context.Clients
+                .Include(c => c.PersonalClient)
+                .FirstOrDefaultAsync(c => c.IdClient == id && !c.IsDeleted);
+
+            if (existingClient != null)
+            {
+                existingClient.Address = client.Address;
+                existingClient.Email = client.Email;
+                existingClient.PhoneNumber = client.PhoneNumber;
+
+                existingClient.PersonalClient.Name = client.Name;
+                existingClient.PersonalClient.Surname = client.Surname;
+
+                _context.Clients.Update(existingClient);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public async Task UpdateClientAsync(Client client)
+        public async Task UpdateCorporateClientAsync(int id, CorpoEditDTO client)
         {
-            _context.Clients.Update(client);
-            await _context.SaveChangesAsync();
+            var existingClient = await _context.Clients
+                .Include(c => c.CorporateClient)
+                .FirstOrDefaultAsync(c => c.IdClient == id && !c.IsDeleted);
+
+            if (existingClient != null)
+            {
+                existingClient.Address = client.Address;
+                existingClient.Email = client.Email;
+                existingClient.PhoneNumber = client.PhoneNumber;
+
+                existingClient.CorporateClient.CorpoName = client.CorpoName;
+
+                _context.Clients.Update(existingClient);
+                await _context.SaveChangesAsync();
+            }
         }
+
 
         public async Task SoftDeleteClientAsync(int id)
         {
@@ -64,15 +157,6 @@ namespace CodeFirst.Services
                 await _context.SaveChangesAsync();
             }
         }
-
-        public async Task HardDeleteClientAsync(int id)
-        {
-            var client = await _context.Clients.FindAsync(id);
-            if (client != null)
-            {
-                _context.Clients.Remove(client);
-                await _context.SaveChangesAsync();
-            }
-        }
+        
     }
 }

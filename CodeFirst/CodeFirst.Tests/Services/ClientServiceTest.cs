@@ -27,8 +27,8 @@ namespace CodeFirst.Tests.Services
             //Put some values into the mock
             _context.Clients.AddRange(new List<Client>
             {
-                new Client { IdClient = 1, Address = "123 Main St", Email = "client1@example.com", PhoneNumber = 1234567890, IsDeleted = false },
-                new Client { IdClient = 2, Address = "456 Elm St", Email = "client2@example.com", PhoneNumber = 9876543210, IsDeleted = false }
+                new Client { IdClient = 1, Address = "123 Main St", Email = "client1@example.com", PhoneNumber = "1234567890", IsDeleted = false },
+                new Client { IdClient = 2, Address = "456 Elm St", Email = "client2@example.com", PhoneNumber = "9876543210", IsDeleted = false }
             });
             _context.SaveChanges();
 
@@ -75,34 +75,125 @@ namespace CodeFirst.Tests.Services
         }
 
         [TestMethod]
-        public async Task AddClientAsync_ShouldAddClient()
+        public async Task AddPersonalClientAsync_ShouldAddPersonalClient()
         {
             //Arrange
-            var newClient = new Client { IdClient = 3, Address = "789 Oak St", Email = "client3@example.com", PhoneNumber = 5555555555 };
+            var personalClientDTO = new PersonalClientDTO
+            {
+                Address = "789 Maple St",
+                Email = "personalclient@example.com",
+                PhoneNumber = "1112223333",
+                Name = "John",
+                Surname = "Doe",
+                PESEL = 12345678901
+            };
 
             //Act
-            await _clientService.AddClientAsync(newClient);
-            var client = await _context.Clients.FindAsync(3);
+            await _clientService.AddPersonalClientAsync(personalClientDTO);
+            var addedClient = await _context.Clients.FirstOrDefaultAsync(c => c.Email == "personalclient@example.com");
 
             //Assert
-            Assert.IsNotNull(client);
-            Assert.AreEqual("client3@example.com", client.Email);
+            Assert.IsNotNull(addedClient);
+            Assert.AreEqual("John", addedClient.PersonalClient.Name);
+            Assert.AreEqual("Doe", addedClient.PersonalClient.Surname);
         }
 
         [TestMethod]
-        public async Task UpdateClientAsync_ShouldUpdateClient()
+        public async Task UpdatePersonalClientAsync_ShouldUpdatePersonalClient()
         {
             //Arrange
-            var clientToUpdate = await _context.Clients.FindAsync(1);
-            clientToUpdate.Address = "Updated Address";
+            
+            var personalClientDTO = new PersonalClientDTO
+            {
+                Address = "789 Maple St",
+                Email = "personalclient@example.com",
+                PhoneNumber = "1112223333",
+                Name = "John",
+                Surname = "Doe",
+                PESEL = 12345678901
+            };
+            
+            await _clientService.AddPersonalClientAsync(personalClientDTO);
+            
+            
+            var personalEditDTO = new PersonalEditDTO()
+            {
+                Address = "Updated Address",
+                Email = "client1@example.com",
+                PhoneNumber = "1234567890",
+                Name = "UpdatedName",
+                Surname = "UpdatedSurname"
+            };
 
             //Act
-            await _clientService.UpdateClientAsync(clientToUpdate);
-            var updatedClient = await _context.Clients.FindAsync(1);
+            await _clientService.UpdatePersonalClientAsync(3, personalEditDTO);
+            var updatedClient = await _context.Clients.FirstOrDefaultAsync(c => c.IdClient == 3);
 
             //Assert
+            Assert.IsNotNull(updatedClient);
             Assert.AreEqual("Updated Address", updatedClient.Address);
+            Assert.AreEqual("UpdatedName", updatedClient.PersonalClient.Name);
+            Assert.AreEqual("UpdatedSurname", updatedClient.PersonalClient.Surname);
+            Assert.AreEqual(12345678901, updatedClient.PersonalClient.PESEL);
         }
+
+        [TestMethod]
+        public async Task AddCorporateClientAsync_ShouldAddCorporateClient()
+        {
+            //Arrange
+            var corporateClientDTO = new CorpoClientDTO
+            {
+                Address = "789 Pine St",
+                Email = "corporateclient@example.com",
+                PhoneNumber = "4445556666",
+                CorpoName = "ABC Corporation",
+                KRS = 9876543210
+            };
+
+            //Act
+            await _clientService.AddCorporateClientAsync(corporateClientDTO);
+            var addedClient = await _context.Clients.FirstOrDefaultAsync(c => c.Email == "corporateclient@example.com");
+
+            //Assert
+            Assert.IsNotNull(addedClient);
+            Assert.AreEqual("ABC Corporation", addedClient.CorporateClient.CorpoName);
+            Assert.AreEqual(9876543210, addedClient.CorporateClient.KRS);
+        }
+
+        [TestMethod]
+        public async Task UpdateCorporateClientAsync_ShouldUpdateCorporateClient()
+        {
+            //Arrange
+            var corporateClientDTO = new CorpoClientDTO
+            {
+                Address = "789 Pine St",
+                Email = "corporateclient@example.com",
+                PhoneNumber = "4445556666",
+                CorpoName = "ABC Corporation",
+                KRS = 9876543210
+            };
+            
+            await _clientService.AddCorporateClientAsync(corporateClientDTO);
+            
+            var corporateEditDTO = new CorpoEditDTO()
+            {
+                Address = "Updated Address",
+                Email = "client2@example.com",
+                PhoneNumber = "9876543210",
+                CorpoName = "UpdatedCorpoName",
+            };
+
+            //Act
+            await _clientService.UpdateCorporateClientAsync(3, corporateEditDTO);
+            var updatedClient = await _context.Clients.FirstOrDefaultAsync(c => c.IdClient == 3);
+
+            //Assert
+            Assert.IsNotNull(updatedClient);
+            Assert.AreEqual("Updated Address", updatedClient.Address);
+            Assert.AreEqual("UpdatedCorpoName", updatedClient.CorporateClient.CorpoName);
+            Assert.AreEqual(9876543210, updatedClient.CorporateClient.KRS);
+        }
+
 
         [TestMethod]
         public async Task SoftDeleteClientAsync_ShouldSoftDeleteClient()
@@ -115,15 +206,5 @@ namespace CodeFirst.Tests.Services
             Assert.IsTrue(client.IsDeleted);
         }
 
-        [TestMethod]
-        public async Task HardDeleteClientAsync_ShouldDeleteClient()
-        {
-            //Act
-            await _clientService.HardDeleteClientAsync(1);
-            var client = await _context.Clients.FindAsync(1);
-
-            //Assert
-            Assert.IsNull(client);
-        }
     }
 }

@@ -72,3 +72,82 @@ public class SubscriptionResponseDTO
     
 }
 
+public class CorpoClientDTO
+{
+    [Required]
+    public string Address { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string PhoneNumber { get; set; } = string.Empty;
+    
+    [Required]
+    public string CorpoName { get; set; } = string.Empty;
+
+    [Required]
+    public Decimal KRS { get; set; }
+}
+
+public class PersonalClientDTO
+{
+    [Required]
+    public string Address { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string PhoneNumber { get; set; }
+    
+    [Required]
+    public string Name { get; set; } = string.Empty;
+
+    [Required]
+    public string Surname { get; set; } = string.Empty;
+
+    [Required]
+    public Decimal PESEL { get; set; }
+}
+
+public class CorpoEditDTO
+{
+    [Required]
+    public string Address { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string PhoneNumber { get; set; } = string.Empty;
+    
+    [Required]
+    public string CorpoName { get; set; } = string.Empty;
+}
+
+public class PersonalEditDTO
+{
+    [Required]
+    public string Address { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = string.Empty;
+
+    [Required]
+    [Phone]
+    public string PhoneNumber { get; set; }
+    
+    [Required]
+    public string Name { get; set; } = string.Empty;
+
+    [Required]
+    public string Surname { get; set; } = string.Empty;
+}

@@ -20,7 +20,7 @@ namespace CodeFirst.Models
 
         [Required]
         [Phone]
-        public Decimal PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
 
         public PersonalClient PersonalClient { get; set; }
         public CorporateClient CorporateClient { get; set; }

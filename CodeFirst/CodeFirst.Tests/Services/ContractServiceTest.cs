@@ -37,8 +37,8 @@ namespace CodeFirst.Tests.Services
             //Add clients
             _context.Clients.AddRange(new List<Client>
             {
-                new Client { IdClient = 1, Address = "123 Main St", Email = "client1@example.com", PhoneNumber = 1234567890, IsDeleted = false },
-                new Client { IdClient = 2, Address = "456 Elm St", Email = "client2@example.com", PhoneNumber = 9876543210, IsDeleted = false }
+                new Client { IdClient = 1, Address = "123 Main St", Email = "client1@example.com", PhoneNumber = "1234567890", IsDeleted = false },
+                new Client { IdClient = 2, Address = "456 Elm St", Email = "client2@example.com", PhoneNumber = "9876543210", IsDeleted = false }
             });
 
             //Add softwares

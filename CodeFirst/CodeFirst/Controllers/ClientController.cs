@@ -35,22 +35,43 @@ namespace CodeFirst.Controllers
             return Ok(client);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddClient([FromBody] Client client)
+        [HttpPost("personal")]
+        public async Task<IActionResult> CreatePersonalClient([FromBody] PersonalClientDTO client)
         {
-            await _clientService.AddClientAsync(client);
-            return CreatedAtAction(nameof(GetClientById), new { id = client.IdClient }, client);
+            await _clientService.AddPersonalClientAsync(client);
+            return Created();
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateClient(int id, [FromBody] Client client)
+        [HttpPost("corporate")]
+        public async Task<IActionResult> CreateCorporateClient([FromBody] CorpoClientDTO client)
         {
-            if (id != client.IdClient)
+            await _clientService.AddCorporateClientAsync(client);
+            return Created();
+        }
+
+        
+        
+        [HttpPut("personal/{id}")]
+        public async Task<IActionResult> UpdatePersonalClient(int id,[FromBody] PersonalEditDTO client)
+        {
+            if (! await _clientService.ClientExists(id))
             {
                 return BadRequest();
             }
 
-            await _clientService.UpdateClientAsync(client);
+            await _clientService.UpdatePersonalClientAsync(id, client);
+            return Ok();
+        }
+        
+        [HttpPut("corporate/{id}")]
+        public async Task<IActionResult> UpdateCorporateClient(int id,[FromBody] CorpoEditDTO client)
+        {
+            if (! await _clientService.ClientExists(id))
+            {
+                return BadRequest();
+            }
+
+            await _clientService.UpdateCorporateClientAsync(id, client);
             return NoContent();
         }
 
