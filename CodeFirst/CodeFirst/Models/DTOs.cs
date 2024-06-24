@@ -18,10 +18,10 @@ public class DiscountDTO
     public int Amt { get; set; }
         
     [Required]
-    public String DateFrom { get; set; }
+    public String DateFrom { get; set; } = string.Empty;
         
     [Required]
-    public String DateTo { get; set; }
+    public String DateTo { get; set; } = string.Empty;
 
 }
 
@@ -34,8 +34,8 @@ public class OneTimePaymentDTO
     public string Version { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
 
-    public DateOnly DateFrom { get; set; }
-    public DateOnly DateTo { get; set; }
+    public String DateFrom { get; set; } = string.Empty;
+    public String DateTo { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public int UpdatePeriod { get; set; }
     
@@ -56,7 +56,7 @@ public class SubscriptionDTO
     public string Version { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
 
-    public DateOnly DateFrom { get; set; }
+    public String DateFrom { get; set; } = string.Empty;
     public decimal Price { get; set; }
     
     

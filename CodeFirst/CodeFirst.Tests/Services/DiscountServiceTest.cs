@@ -64,8 +64,8 @@ namespace CodeFirst.Tests.Services
                 Name = "Discount3",
                 Offer = "Offer3",
                 Amt = 30,
-                DateFrom = "01 01 2024",
-                DateTo = "31 12 2024"
+                DateFrom = "01-01-2024",
+                DateTo = "31-12-2024"
             };
 
             //Act
@@ -76,8 +76,8 @@ namespace CodeFirst.Tests.Services
             Assert.AreEqual("Discount3", result.Name);
             Assert.AreEqual("Offer3", result.Offer);
             Assert.AreEqual(30, result.Amt);
-            Assert.AreEqual(DateOnly.ParseExact("01 01 2024", "dd MM yyyy", null), result.DateFrom);
-            Assert.AreEqual(DateOnly.ParseExact("31 12 2024", "dd MM yyyy", null), result.DateTo);
+            Assert.AreEqual(DateOnly.ParseExact("01-01-2024", "dd-MM-yyyy", null), result.DateFrom);
+            Assert.AreEqual(DateOnly.ParseExact("31-12-2024", "dd-MM-yyyy", null), result.DateTo);
         }
 
         [TestMethod]
@@ -89,8 +89,8 @@ namespace CodeFirst.Tests.Services
                 Name = "Discount4",
                 Offer = "Offer4",
                 Amt = 40,
-                DateFrom = "01 01 2024",
-                DateTo = "31 12 2024"
+                DateFrom = "01-01-2024",
+                DateTo = "31-12-2024"
             };
 
             //Act
@@ -102,8 +102,8 @@ namespace CodeFirst.Tests.Services
             Assert.AreEqual(addedDiscount.IdDiscount, result.IdDiscount);
             Assert.AreEqual("Offer4", result.Offer);
             Assert.AreEqual(40, result.Amt);
-            Assert.AreEqual(DateOnly.ParseExact("01 01 2024", "dd MM yyyy", null), result.DateFrom);
-            Assert.AreEqual(DateOnly.ParseExact("31 12 2024", "dd MM yyyy", null), result.DateTo);
+            Assert.AreEqual(DateOnly.ParseExact("01-01-2024", "dd-MM-yyyy", null), result.DateFrom);
+            Assert.AreEqual(DateOnly.ParseExact("31-12-2024", "dd-MM-yyyy", null), result.DateTo);
         }
     }
 }

@@ -41,11 +41,16 @@ namespace CodeFirst.Controllers
             }
 
             //Check if the period is correct
-            if (!await _contractService.PeriodCorrect(contractDto.DateFrom, contractDto.DateTo))
+            if (!await _contractService.PeriodCorrect(DateOnly.ParseExact(contractDto.DateFrom , "dd-MM-yyyy", null), DateOnly.ParseExact(contractDto.DateTo , "dd-MM-yyyy", null)))
             {
                 return BadRequest(new { Message = "The contract period must be between 3 and 30 days." });
             }
 
+            if (!await _contractService.UpdatePeriodCorrect(contractDto.UpdatePeriod))
+            {
+                return BadRequest(new { Message = "The update period must be between 1 and 4 years." });
+            }
+            
             //Finally, create the contract
             var result = await _contractService.CreateContractAsync(contractDto);
             return Ok(result);

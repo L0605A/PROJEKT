@@ -15,6 +15,8 @@ namespace CodeFirst.Services
         
         Task<bool> RenewalPeriodCorrect(int renewalPeriod);
         
+        Task<bool> UpdatePeriodCorrect(int updatePeriod);
+        
         Task<OneTimePaymentResponseDTO> CreateContractAsync(OneTimePaymentDTO contractDto);
         
         Task<SubscriptionResponseDTO> CreateContractAsync(SubscriptionDTO subscriptionDto);
@@ -37,6 +39,11 @@ namespace CodeFirst.Services
         public async Task<bool> SoftwareExists(int ID)
         {
             return await _context.Softwares.AnyAsync(s => s.IdSoftware == ID);
+        }
+        
+        public async Task<bool> UpdatePeriodCorrect(int updatePeriod)
+        {
+            return updatePeriod >= 1 && updatePeriod <= 4;
         }
 
         public async Task<bool> ClientHasContract(int idClient, int idSotware)
@@ -107,7 +114,7 @@ namespace CodeFirst.Services
                 IdSoftware = contractDto.IdSoftware,
                 Software = await _context.Softwares.Where(s => s.IdSoftware == contractDto.IdSoftware).FirstOrDefaultAsync(),
                 Name = contractDto.Name,
-                DateFrom = contractDto.DateFrom,
+                DateFrom = DateOnly.ParseExact(contractDto.DateFrom, "dd-MM-yyyy", null),
                 Price = finalPrice,
             };
 
@@ -119,7 +126,7 @@ namespace CodeFirst.Services
                 IdContract = contract.IdContract,
                 Contract = contract,
                 Version = contractDto.Version,
-                DateTo = contractDto.DateTo,
+                DateTo = DateOnly.ParseExact(contractDto.DateTo, "dd-MM-yyyy", null),
                 Status = "inactive",
                 UpdatePeriod = contractDto.UpdatePeriod
             };
@@ -171,7 +178,7 @@ namespace CodeFirst.Services
                 IdSoftware = subscriptionDto.IdSoftware,
                 Software = await _context.Softwares.Where(s => s.IdSoftware == subscriptionDto.IdSoftware).FirstOrDefaultAsync(),
                 Name = subscriptionDto.Name,
-                DateFrom = subscriptionDto.DateFrom,
+                DateFrom = DateOnly.ParseExact(subscriptionDto.DateFrom, "dd-MM-yyyy", null),
                 Price = subscriptionDto.Price
             };
 

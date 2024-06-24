@@ -34,8 +34,8 @@ namespace CodeFirst.Services
                 Name = discountDTO.Name,
                 Offer = discountDTO.Offer,
                 Amt = discountDTO.Amt,
-                DateFrom = DateOnly.ParseExact(discountDTO.DateFrom, "dd MM yyyy", null),
-                DateTo = DateOnly.ParseExact(discountDTO.DateTo, "dd MM yyyy", null)
+                DateFrom = DateOnly.ParseExact(discountDTO.DateFrom, "dd-MM-yyyy", null),
+                DateTo = DateOnly.ParseExact(discountDTO.DateTo, "dd-MM-yyyy", null)
 
             };
             

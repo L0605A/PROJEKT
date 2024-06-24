@@ -186,8 +186,8 @@ namespace CodeFirst.Tests.Services
                 IdClient = 1,
                 IdSoftware = 1,
                 Name = "NewContract",
-                DateFrom = DateOnly.FromDateTime(DateTime.Now),
-                DateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(20)),
+                DateFrom = DateOnly.FromDateTime(DateTime.Now).ToString().Replace(".", "-"),
+                DateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(20)).ToString().Replace(".", "-"),
                 Price = 2000,
                 Version = "1.0",
                 UpdatePeriod = 2
@@ -211,7 +211,7 @@ namespace CodeFirst.Tests.Services
                 IdClient = 2,
                 IdSoftware = 2,
                 Name = "NewSubscription",
-                DateFrom = DateOnly.FromDateTime(DateTime.Now),
+                DateFrom = DateOnly.FromDateTime(DateTime.Now).ToString().Replace(".", "-"),
                 Price = 3000,
                 RenevalTimeInMonths = 12
             };
