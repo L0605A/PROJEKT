@@ -19,7 +19,7 @@ namespace CodeFirst.Controllers
         }
         
 
-        [HttpGet("one-time-payment")]
+        [HttpPost("one-time-payment")]
         public async Task<IActionResult> AddOneTimePaymentContract(OneTimePaymentDTO contractDto)
         {
             //Check if client exists
@@ -52,7 +52,7 @@ namespace CodeFirst.Controllers
         }
         
         
-        [HttpGet("subscription")]
+        [HttpPost("subscription")]
         public async Task<IActionResult> AddSubscriptionContract(SubscriptionDTO contractDto)
         {
             //Check if client exists
@@ -72,10 +72,10 @@ namespace CodeFirst.Controllers
             {
                 return Conflict(new { Message = "Client already has an active contract for this software." });
             }
-            
-            if (! (contractDto.RenevalTimeInMonths >= 1 && contractDto.RenevalTimeInMonths <= 12))
+           
+            if (! ( await  _contractService.RenewalPeriodCorrect(contractDto.RenevalTimeInMonths)))
             {
-                return BadRequest(new { Message = "Reneval time must be between 1 and 12 months." });
+                return BadRequest(new { Message = "Renewal time must be between 1 and 12 months." });
             }
 
             //Finally, create the contract

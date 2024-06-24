@@ -34,7 +34,7 @@ namespace CodeFirst.Services
     {
 
         private readonly ApplicationContext _context;
-        private readonly HttpClient _httpClient;
+        public readonly HttpClient _httpClient = new HttpClient();
 
         public MoneyService(ApplicationContext context)
         {
@@ -172,49 +172,22 @@ namespace CodeFirst.Services
 
         }
 
-        public async Task<decimal> GetProfit(string currency)
-        {
-            var ledgers = await _context.Ledgers.Include(l => l.Contract).ToListAsync();
-            decimal profit = 0;
-            double exchangeRate = await GetNBPRate(currency);
-
-            foreach (var ledger in ledgers)
-            {
-                if (await IsSubscription(ledger.IdContract))
-                {
-                    profit += ledger.AmountPaid;
-                }
-                else
-                {
-                    var oneTimePayment = await _context.OneTimePayments.FirstOrDefaultAsync(otp => otp.IdContract == ledger.IdContract);
-
-                    if (oneTimePayment != null && oneTimePayment.Status == "active")
-                    {
-                        profit += ledger.AmountPaid;
-                    }
-                }
-            }
-            
-            return profit * (decimal)exchangeRate;
-        }
-
         public async Task<decimal> GetProfit(int? IdSoftware, string currency)
         {
-            var ledgersQuery = _context.Ledgers
-                .Include(l => l.Contract)
-                .AsQueryable();
-
+            var ledgers = await _context.Ledgers.Include(l => l.Contract).ToListAsync();
+            
             if (IdSoftware.HasValue)
             {
-                ledgersQuery = ledgersQuery.Where(l => l.Contract.IdSoftware == IdSoftware);
+               ledgers = await _context.Ledgers.Include(l => l.Contract).Where(l => l.Contract.IdSoftware == IdSoftware).ToListAsync();
             }
-
-            var ledgers = await ledgersQuery.ToListAsync();
+            
             decimal profit = 0;
             double exchangeRate = await GetNBPRate(currency);
-
+            
             foreach (var ledger in ledgers)
             {
+                Console.WriteLine("Checking " + ledger.IdContract);
+
                 if (await IsSubscription(ledger.IdContract))
                 {
                     profit += ledger.AmountPaid;
@@ -228,10 +201,12 @@ namespace CodeFirst.Services
                     {
                         profit += ledger.AmountPaid;
                     }
-                }
-            }
 
-            return profit * (decimal)exchangeRate;
+                }
+                
+            }
+        
+            return profit / (decimal)exchangeRate;
         }
         
         public async Task<decimal> GetPredictedProfit(int? IdSoftware, string currency,  int periodInMonths)
@@ -303,7 +278,7 @@ namespace CodeFirst.Services
                 profit += contract.Price * periodsBetween;
             }
 
-            return profit * (decimal)exchangeRate;
+            return profit / (decimal)exchangeRate;
         }
 
         
@@ -328,7 +303,7 @@ namespace CodeFirst.Services
 
                 var allRates = new List<JsonElement>(ratesArray1);
                 allRates.AddRange(ratesArray2);
-
+                
                 foreach (var rate in allRates)
                 {
                     if (rate.GetProperty("code").GetString() == currencyCode)

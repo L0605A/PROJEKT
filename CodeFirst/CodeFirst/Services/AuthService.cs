@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +13,30 @@ namespace CodeFirst.Services
         Task<string> Authenticate(string username, string password);
     
     }
+
+    public static class PasswordHasher
+    {
+        public static string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var builder = new StringBuilder();
+                foreach (var b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
+        public static bool VerifyPassword(string password, string hashedPassword)
+        {
+            var hashOfInput = HashPassword(password);
+            return hashOfInput.Equals(hashedPassword, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
 
 
     public class AuthService : IAuthService
@@ -29,7 +54,7 @@ namespace CodeFirst.Services
         {
             var user = _context.Users.SingleOrDefault(u => u.Username == username);
 
-            if (user == null || !PasswordHasher.VerifyPassword(password, user.PasswordHash))
+            if (user == null || password == null || !PasswordHasher.VerifyPassword(password, user.PasswordHash))
             {
                 return null;
             }
