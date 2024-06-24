@@ -9,7 +9,7 @@ namespace CodeFirst.Services
         
         Task<bool> SoftwareExists(int ID);
 
-        Task<bool> ClientHasContract(OneTimePaymentDTO contractDto);
+        Task<bool> ClientHasContract(int idClient, int idSotware);
         
         Task<bool> PeriodCorrect(DateOnly dateFrom, DateOnly dateTo);
         
@@ -39,13 +39,31 @@ namespace CodeFirst.Services
             return await _context.Softwares.AnyAsync(s => s.IdSoftware == ID);
         }
 
-        public async Task<bool> ClientHasContract(OneTimePaymentDTO contractDto)
+        public async Task<bool> ClientHasContract(int idClient, int idSotware)
         {
-            var existingContract = await _context.Contracts
-                .Include(c => c.OneTimePayment)
-                .FirstOrDefaultAsync(c => c.IdClient == contractDto.IdClient && c.IdSoftware == contractDto.IdSoftware && c.OneTimePayment.DateTo >= DateOnly.FromDateTime(DateTime.Now));
+            var contracts = await _context.Contracts.Where(c => c.IdClient == idClient && c.IdSoftware == idSotware).Select(c => c.IdContract).ToListAsync();
 
-            return (existingContract != null);
+            var validOneTimes = await _context.OneTimePayments
+                .Where(o => o.DateTo >= DateOnly.FromDateTime(DateTime.Now) && contracts.Contains(o.IdContract)).ToListAsync();
+
+            var ledgers = await _context.Ledgers.Where(l => contracts.Contains(l.IdContract)).ToListAsync();
+
+            
+            var subs = await _context.Subscriptions
+                .Where(o => contracts.Contains(o.IdContract))
+                .ToListAsync();
+
+            var currentDate = DateOnly.FromDateTime(DateTime.Now);
+
+            var validSubs = subs
+                .Where(o => 
+                {
+                    var ledger = ledgers.OrderBy(l => l.PaidOn).FirstOrDefault(l => l.IdContract == o.IdContract);
+                    return ledger != null && ledger.PaidOn.AddMonths(o.RenevalTimeInMonths) <= currentDate;
+                })
+                .ToList();
+            
+            return (validOneTimes.Count > 0 || validSubs.Count > 0);
         }
 
         public async Task<bool> PeriodCorrect(DateOnly dateFrom, DateOnly dateTo)
@@ -56,7 +74,7 @@ namespace CodeFirst.Services
 
         public async Task<bool> RenewalPeriodCorrect(int renewalPeriod)
         {
-            return renewalPeriod >= 2 && renewalPeriod <= 24;
+            return renewalPeriod >= 1 && renewalPeriod <= 24;
         }
         
         public async Task<OneTimePaymentResponseDTO> CreateContractAsync(OneTimePaymentDTO contractDto)

@@ -152,7 +152,8 @@ namespace CodeFirst.Migrations
                     IdPayment = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     IdContract = table.Column<int>(type: "int", nullable: false),
-                    AmountPaid = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    AmountPaid = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PaidOn = table.Column<DateOnly>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -216,7 +217,7 @@ namespace CodeFirst.Migrations
             migrationBuilder.InsertData(
                 table: "discounts",
                 columns: new[] { "IdDiscount", "Amt", "DateFrom", "DateTo", "Name", "Offer" },
-                values: new object[] { 1, 10, new DateOnly(2024, 6, 23), new DateOnly(2024, 7, 23), "Discount1", "Offer1" });
+                values: new object[] { 1, 10, new DateOnly(2024, 6, 24), new DateOnly(2024, 7, 24), "Discount1", "Offer1" });
 
             migrationBuilder.InsertData(
                 table: "softwares",
@@ -235,7 +236,7 @@ namespace CodeFirst.Migrations
             migrationBuilder.InsertData(
                 table: "contracts",
                 columns: new[] { "IdContract", "DateFrom", "IdClient", "IdSoftware", "Name", "Price" },
-                values: new object[] { 1, new DateOnly(2024, 6, 23), 1, 1, "Contract1", 1000m });
+                values: new object[] { 1, new DateOnly(2024, 6, 24), 1, 1, "Contract1", 1000m });
 
             migrationBuilder.InsertData(
                 table: "corporate_clients",
@@ -249,13 +250,13 @@ namespace CodeFirst.Migrations
 
             migrationBuilder.InsertData(
                 table: "ledgers",
-                columns: new[] { "IdPayment", "AmountPaid", "IdContract" },
-                values: new object[] { 1, 500m, 1 });
+                columns: new[] { "IdPayment", "AmountPaid", "IdContract", "PaidOn" },
+                values: new object[] { 1, 500m, 1, new DateOnly(1, 1, 1) });
 
             migrationBuilder.InsertData(
                 table: "one_time_payments",
                 columns: new[] { "IdContract", "DateTo", "Status", "UpdatePeriod", "Version" },
-                values: new object[] { 1, new DateOnly(2025, 6, 23), "Active", 12, "1.0" });
+                values: new object[] { 1, new DateOnly(2025, 6, 24), "Active", 12, "1.0" });
 
             migrationBuilder.InsertData(
                 table: "subscriptions",

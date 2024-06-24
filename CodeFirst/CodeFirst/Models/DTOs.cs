@@ -59,7 +59,6 @@ public class SubscriptionDTO
     public DateOnly DateFrom { get; set; }
     public decimal Price { get; set; }
     
-    public int UpdatePeriod { get; set; }
     
 
     [Required]

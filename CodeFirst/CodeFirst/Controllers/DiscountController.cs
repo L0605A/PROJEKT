@@ -9,6 +9,8 @@ namespace CodeFirst.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,User")]
+
     public class DiscountsController : ControllerBase
     {
         private readonly IDiscountService _discountService;

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeFirst.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20240623133814_DB")]
+    [Migration("20240624110021_DB")]
     partial class DB
     {
         /// <inheritdoc />
@@ -107,7 +107,7 @@ namespace CodeFirst.Migrations
                         new
                         {
                             IdContract = 1,
-                            DateFrom = new DateOnly(2024, 6, 23),
+                            DateFrom = new DateOnly(2024, 6, 24),
                             IdClient = 1,
                             IdSoftware = 1,
                             Name = "Contract1",
@@ -176,8 +176,8 @@ namespace CodeFirst.Migrations
                         {
                             IdDiscount = 1,
                             Amt = 10,
-                            DateFrom = new DateOnly(2024, 6, 23),
-                            DateTo = new DateOnly(2024, 7, 23),
+                            DateFrom = new DateOnly(2024, 6, 24),
+                            DateTo = new DateOnly(2024, 7, 24),
                             Name = "Discount1",
                             Offer = "Offer1"
                         });
@@ -197,6 +197,9 @@ namespace CodeFirst.Migrations
                     b.Property<int>("IdContract")
                         .HasColumnType("int");
 
+                    b.Property<DateOnly>("PaidOn")
+                        .HasColumnType("date");
+
                     b.HasKey("IdPayment");
 
                     b.HasIndex("IdContract");
@@ -208,7 +211,8 @@ namespace CodeFirst.Migrations
                         {
                             IdPayment = 1,
                             AmountPaid = 500m,
-                            IdContract = 1
+                            IdContract = 1,
+                            PaidOn = new DateOnly(1, 1, 1)
                         });
                 });
 
@@ -239,7 +243,7 @@ namespace CodeFirst.Migrations
                         new
                         {
                             IdContract = 1,
-                            DateTo = new DateOnly(2025, 6, 23),
+                            DateTo = new DateOnly(2025, 6, 24),
                             Status = "Active",
                             UpdatePeriod = 12,
                             Version = "1.0"

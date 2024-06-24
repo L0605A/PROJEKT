@@ -49,7 +49,9 @@ builder.Services.AddDbContext<ApplicationContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IContractService, ContractService>();
 builder.Services.AddScoped<IDiscountService, DiscountService>();
+builder.Services.AddScoped<IMoneyService, MoneyService>();
 builder.Services.AddControllers();
 
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);

@@ -11,17 +11,21 @@ namespace CodeFirst.Services
     {
         Task<bool> ContractExists(int ID);
         
-        Task<bool> IsSubscription(int ID);
+        Task<bool> SoftwareExists(int? ID);
         
-        Task<bool> IsPriceValid(int ID, decimal amount, bool IsSubscription, int idClient = 0);
+        Task<bool> IsSubscription(int ID);
+
+        Task<bool> IsTimeValid(int ID);
+        
+        Task<bool> IsPriceValid(int ID, decimal amount);
         
         Task PayForOneTimeContract(int IdContract, Decimal amount);
         
         Task PayForSubscriptionContract(int IdContract, Decimal amount);
         
-        Task<Decimal> GetProfit(string currency = "PLN");
+        Task<Decimal> GetProfit(int? IdSoftware ,string currency);
         
-        Task<Decimal> GetProfitForSoftware(int IdSoftware ,string currency = "PLN");
+        Task<Decimal> GetPredictedProfit(int? IdSoftware ,string currency, int periodInMonths);
 
         Task<double> GetNBPRate(string currencyCode);
     }
@@ -42,21 +46,31 @@ namespace CodeFirst.Services
             return await _context.Contracts.AnyAsync(c => c.IdContract == ID);
         }
         
+        public async Task<bool> SoftwareExists(int? ID)
+        {
+            return await _context.Softwares.AnyAsync(c => c.IdSoftware == ID);
+        }
+        
         public async Task<bool> IsSubscription(int ID)
         {
             return await _context.Subscriptions.AnyAsync(c => c.IdContract == ID);
         }
         
 
-        public async Task<bool> IsPriceValid(int ID, decimal amount, bool IsSubscription,int idClient = 0)
+        public async Task<bool> IsPriceValid(int ID, decimal amount)
         {
+            if (amount <= 0)
+            {
+                return false;
+            }
+            
             var contract = await _context.Contracts.Where(c => c.IdContract == ID).FirstOrDefaultAsync();
 
             var price = contract.Price;
             
-            if (IsSubscription)
+            if (await IsSubscription(ID))
             {
-                var client = await _context.Clients.Include(c => c.Contracts).FirstOrDefaultAsync(c => c.IdClient == idClient);
+                var client = await _context.Clients.Include(c => c.Contracts).FirstOrDefaultAsync(c => c.IdClient == contract.IdClient);
                 if (client.Contracts.Any())
                 {
                     return ((float) price * 0.95).Equals((float) amount);
@@ -67,6 +81,47 @@ namespace CodeFirst.Services
             var pricePaid = await _context.Ledgers.Where(l => l.IdContract == ID).Select(l => l.AmountPaid).SumAsync();
 
             return pricePaid + amount <= price;
+
+        }
+        
+        public async Task<bool> IsTimeValid(int ID)
+        {
+            var contract = await _context.Contracts.Where(c => c.IdContract == ID).FirstOrDefaultAsync();
+            
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            var price = contract.Price;
+            
+            if (await IsSubscription(ID))
+            {
+                var firstPayedOn = contract.DateFrom;
+
+                var payPeriod = await _context.Subscriptions.Where(s => s.IdContract == ID)
+                    .Select(s => s.RenevalTimeInMonths).FirstOrDefaultAsync();
+
+                var subscriptionPayments = await _context.Ledgers.Where(l => l.IdContract == ID).ToListAsync();
+
+                var lastPayment = subscriptionPayments.MinBy(l => l.PaidOn);
+
+                var payedAlready = subscriptionPayments.Count;
+
+                var lastPaymentStart = firstPayedOn.AddMonths(payPeriod * (payedAlready-1));
+
+                var lastPaymentEnd = lastPaymentStart.AddMonths(payPeriod);
+                
+                var currentPaymentStart = firstPayedOn.AddMonths(payPeriod * payedAlready);
+
+                var currentPaymentEnd = currentPaymentStart.AddMonths(payPeriod);
+                
+                bool isLastPaymentValid = lastPayment.PaidOn >= lastPaymentStart && lastPayment.PaidOn <= lastPaymentEnd;
+                bool isCurrentPaymentValid = today >= currentPaymentStart && today <= currentPaymentEnd;
+                
+                return isCurrentPaymentValid && isLastPaymentValid;
+            }
+
+            var terminationDate = await _context.OneTimePayments.Where(o => o.IdContract == ID).Select(c => c.DateTo).FirstOrDefaultAsync();
+
+            return terminationDate <= today;
 
         }
         
@@ -83,7 +138,8 @@ namespace CodeFirst.Services
                 {
                     IdContract = IdContract,
                     Contract = await _context.Contracts.Where(c => c.IdContract == IdContract).FirstOrDefaultAsync(),
-                    AmountPaid = amount
+                    AmountPaid = amount,
+                    PaidOn = DateOnly.FromDateTime(DateTime.Now)
                 };
                 
                 if (pricePaid + amount == price)
@@ -116,7 +172,7 @@ namespace CodeFirst.Services
 
         }
 
-        public async Task<decimal> GetProfit(string currency = "PLN")
+        public async Task<decimal> GetProfit(string currency)
         {
             var ledgers = await _context.Ledgers.Include(l => l.Contract).ToListAsync();
             decimal profit = 0;
@@ -142,12 +198,18 @@ namespace CodeFirst.Services
             return profit * (decimal)exchangeRate;
         }
 
-        public async Task<decimal> GetProfitForSoftware(int IdSoftware, string currency = "PLN")
+        public async Task<decimal> GetProfit(int? IdSoftware, string currency)
         {
-            var ledgers = await _context.Ledgers
+            var ledgersQuery = _context.Ledgers
                 .Include(l => l.Contract)
-                .Where(l => l.Contract.IdSoftware == IdSoftware)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (IdSoftware.HasValue)
+            {
+                ledgersQuery = ledgersQuery.Where(l => l.Contract.IdSoftware == IdSoftware);
+            }
+
+            var ledgers = await ledgersQuery.ToListAsync();
             decimal profit = 0;
             double exchangeRate = await GetNBPRate(currency);
 
@@ -159,7 +221,8 @@ namespace CodeFirst.Services
                 }
                 else
                 {
-                    var oneTimePayment = await _context.OneTimePayments.FirstOrDefaultAsync(otp => otp.IdContract == ledger.IdContract);
+                    var oneTimePayment = await _context.OneTimePayments
+                        .FirstOrDefaultAsync(otp => otp.IdContract == ledger.IdContract);
 
                     if (oneTimePayment != null && oneTimePayment.Status == "active")
                     {
@@ -167,9 +230,82 @@ namespace CodeFirst.Services
                     }
                 }
             }
-            
+
             return profit * (decimal)exchangeRate;
         }
+        
+        public async Task<decimal> GetPredictedProfit(int? IdSoftware, string currency,  int periodInMonths)
+        {
+            var ledgersQuery = _context.Ledgers
+                .Include(l => l.Contract)
+                .AsQueryable();
+
+            if (IdSoftware.HasValue)
+            {
+                ledgersQuery = ledgersQuery.Where(l => l.Contract.IdSoftware == IdSoftware);
+            }
+
+            var ledgers = await ledgersQuery.ToListAsync();
+            decimal profit = 0;
+            double exchangeRate = await GetNBPRate(currency);
+
+            foreach (var ledger in ledgers)
+            {
+                if (await IsSubscription(ledger.IdContract))
+                {
+                    profit += ledger.AmountPaid;
+                }
+                else
+                {
+                    var oneTimePayment = await _context.OneTimePayments
+                        .FirstOrDefaultAsync(otp => otp.IdContract == ledger.IdContract);
+
+                    if (oneTimePayment != null && (oneTimePayment.Status == "active" || oneTimePayment.DateTo <= DateOnly.FromDateTime(DateTime.Today)))
+                    {
+                        profit += ledger.AmountPaid;
+                    }
+                }
+            }
+
+            var subs = await _context.Subscriptions.ToListAsync();
+            
+            if (IdSoftware.HasValue)
+            {
+                var contractsIds = await _context.Contracts
+                    .Where(c => c.IdSoftware == IdSoftware)
+                    .Select(c => c.IdSoftware)
+                    .ToListAsync();
+
+                subs = await _context.Subscriptions
+                    .Where(s => contractsIds.Contains(s.IdContract))
+                    .ToListAsync();
+
+            }
+
+            foreach (var sub in subs)
+            {
+                var contract = await _context.Contracts.Where(c => c.IdContract == sub.IdContract).FirstOrDefaultAsync();
+                
+                var subEnd = DateOnly.FromDateTime(DateTime.Today).AddMonths(periodInMonths);
+                
+                var subscriptionPayments = await _context.Ledgers.Where(l => l.IdContract == sub.IdContract).ToListAsync();
+                
+                var payedAlready = subscriptionPayments.Count;
+                
+                var firstPayedOn = contract.DateFrom;
+
+                var payedTill = firstPayedOn.AddMonths(sub.RenevalTimeInMonths * payedAlready);
+
+                int totalMonths = (subEnd.Year - payedTill.Year) * 12 + subEnd.Month - payedTill.Month;
+                
+                int periodsBetween = totalMonths % periodInMonths;
+
+                profit += contract.Price * periodsBetween;
+            }
+
+            return profit * (decimal)exchangeRate;
+        }
+
         
         
         public async Task<double> GetNBPRate(string currencyCode)
