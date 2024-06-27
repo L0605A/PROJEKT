@@ -95,7 +95,7 @@ namespace CodeFirst.Services
         
         public async Task<OneTimePaymentResponseDTO> CreateContractAsync(OneTimePaymentDTO contractDto)
         {
-            decimal finalPrice = contractDto.Price;
+            decimal finalPrice = (decimal)(contractDto.Price * 100);
 
             var today = DateOnly.FromDateTime(DateTime.Now);
 
@@ -145,7 +145,7 @@ namespace CodeFirst.Services
             _context.OneTimePayments.Add(OneTimePayment);
             await _context.SaveChangesAsync();
 
-            contractDto.Price = finalPrice;
+            contractDto.Price = (double)finalPrice / 100;
 
             OneTimePaymentResponseDTO oneTimePaymentDto = new OneTimePaymentResponseDTO()
             {
@@ -160,7 +160,7 @@ namespace CodeFirst.Services
         
          public async Task<SubscriptionResponseDTO> CreateContractAsync(SubscriptionDTO subscriptionDto)
         {
-            decimal finalPrice = subscriptionDto.Price;
+            decimal finalPrice = (decimal)( subscriptionDto.Price * 100);
 
             var today = DateOnly.FromDateTime(DateTime.Now);
 
@@ -174,7 +174,7 @@ namespace CodeFirst.Services
             if (client.Contracts.Any())
             {
                 discountPercentage += 5;
-                subscriptionDto.Price = (decimal)((double)subscriptionDto.Price * 0.95);
+                subscriptionDto.Price *= 0.95;
             }
 
             var discountAmount = finalPrice * (discountPercentage / 100m);
@@ -189,7 +189,7 @@ namespace CodeFirst.Services
                 Software = await _context.Softwares.Where(s => s.IdSoftware == subscriptionDto.IdSoftware).FirstOrDefaultAsync(),
                 Name = subscriptionDto.Name,
                 DateFrom = DateOnly.ParseExact(subscriptionDto.DateFrom, "dd-MM-yyyy", null),
-                Price = subscriptionDto.Price
+                Price = (decimal)( subscriptionDto.Price * 100)
             };
 
             _context.Contracts.Add(contract);

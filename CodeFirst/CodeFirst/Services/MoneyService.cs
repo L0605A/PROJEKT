@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -10,7 +11,6 @@ namespace CodeFirst.Services
     public interface IMoneyService
     {
         Task<bool> ContractExists(int ID);
-        
         Task<bool> IsPayedOff(int ID);
         
         Task<bool> SoftwareExists(int? ID);
@@ -25,9 +25,9 @@ namespace CodeFirst.Services
         
         Task PayForSubscriptionContract(int IdContract, Decimal amount);
         
-        Task<Decimal> GetProfit(int? IdSoftware ,string currency);
+        Task<Double> GetProfit(int? IdSoftware ,string currency);
         
-        Task<Decimal> GetPredictedProfit(int? IdSoftware ,string currency, int periodInMonths);
+        Task<Double> GetPredictedProfit(int? IdSoftware ,string currency, int periodInMonths);
 
         Task<double> GetNBPRate(string currencyCode);
     }
@@ -182,7 +182,7 @@ namespace CodeFirst.Services
 
         }
 
-        public async Task<decimal> GetProfit(int? IdSoftware, string currency)
+        public async Task<double> GetProfit(int? IdSoftware, string currency)
         {
             var ledgers = await _context.Ledgers.Include(l => l.Contract).ToListAsync();
             
@@ -216,10 +216,10 @@ namespace CodeFirst.Services
                 
             }
         
-            return profit / (decimal)exchangeRate;
+            return ((double)profit / 100) / exchangeRate;
         }
         
-        public async Task<decimal> GetPredictedProfit(int? IdSoftware, string currency,  int periodInMonths)
+        public async Task<double> GetPredictedProfit(int? IdSoftware, string currency,  int periodInMonths)
         {
             var ledgersQuery = _context.Ledgers
                 .Include(l => l.Contract)
@@ -288,7 +288,7 @@ namespace CodeFirst.Services
                 profit += contract.Price * periodsBetween;
             }
 
-            return profit / (decimal)exchangeRate;
+            return ((double)profit / 100) / exchangeRate;
         }
 
         

@@ -37,12 +37,12 @@ namespace CodeFirst.Controllers
                     return BadRequest("It's not the time to renew the subscription, or the subscription has been already cancelled");
                 }
                 
-                if (!await _moneyService.IsPriceValid(payment.ContractId, payment.Amount))
+                if (!await _moneyService.IsPriceValid(payment.ContractId, (decimal)(payment.Amount * 100)))
                 {
                     return BadRequest("Amount of money should be exactly what is required in the contract");
                 }
 
-                await _moneyService.PayForSubscriptionContract(payment.ContractId, payment.Amount);
+                await _moneyService.PayForSubscriptionContract(payment.ContractId, (decimal)(payment.Amount * 100));
             }
             else
             {
@@ -58,12 +58,12 @@ namespace CodeFirst.Controllers
                     return BadRequest("This contract is already payed off");
                 }
                 
-                if (!await _moneyService.IsPriceValid(payment.ContractId, payment.Amount))
+                if (!await _moneyService.IsPriceValid(payment.ContractId, (decimal)(payment.Amount * 100)))
                 {
                     return BadRequest("Amount of money is incorrect");
                 }
 
-                await _moneyService.PayForOneTimeContract(payment.ContractId, payment.Amount);
+                await _moneyService.PayForOneTimeContract(payment.ContractId,(decimal)(payment.Amount * 100));
             }
 
             return Ok("Payment processed");

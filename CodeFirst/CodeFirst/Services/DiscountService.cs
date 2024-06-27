@@ -2,12 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace CodeFirst.Services
 {
     public interface IDiscountService
     {
+        Task<bool> DateValid(string date);
         Task<IEnumerable<Discount>> GetAllDiscountsAsync();
         Task<Discount> AddDiscountAsync(DiscountDTO discountDTO);
     }
@@ -22,6 +24,12 @@ namespace CodeFirst.Services
             _context = context;
         }
 
+        public async Task<bool> DateValid(string date)
+        {
+            DateTime temp;
+            return DateTime.TryParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out temp);
+        }
+        
         public async Task<IEnumerable<Discount>> GetAllDiscountsAsync()
         {
             return await _context.Discounts.ToListAsync();

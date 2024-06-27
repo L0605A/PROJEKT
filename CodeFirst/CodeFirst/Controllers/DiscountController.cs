@@ -30,8 +30,14 @@ namespace CodeFirst.Controllers
         [HttpPost]
         public async Task<IActionResult> AddDiscount([FromBody] DiscountDTO discountDTO)
         {
+            //Check if price for the contract is valid
+            if (!await ( _discountService.DateValid(discountDTO.DateFrom)) || !await ( _discountService.DateValid(discountDTO.DateTo)))
+            {
+                return BadRequest("Dates should be in format \"dd-MM-yyy\"" );
+            }
+            
             var discount = await _discountService.AddDiscountAsync(discountDTO);
-            return CreatedAtAction(nameof(GetAllDiscounts), discount);
+            return Created();
         }
     }
 }
