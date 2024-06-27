@@ -285,7 +285,7 @@ namespace CodeFirst.Tests.Services
             var result = await _moneyService.GetPredictedProfit(null, "PLN", 8);
 
             //Assert
-            Assert.AreEqual(1800, result);
+            Assert.AreEqual(1500, result);
         }
         
         [TestMethod]
@@ -331,7 +331,7 @@ namespace CodeFirst.Tests.Services
             var result = await _moneyService.GetNBPRate("PLN");
 
             //Assert
-            Assert.AreEqual(1.0, result);
+            Assert.AreEqual(1, result);
         }
     }
 }

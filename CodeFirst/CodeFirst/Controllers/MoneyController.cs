@@ -34,15 +34,20 @@ namespace CodeFirst.Controllers
                 
                 if (!await _moneyService.IsTimeValid(payment.ContractId))
                 {
-                    return BadRequest("It's not the time to renew the subscription, or the subscription has been already cancelled");
+                    return BadRequest("It's not the time to renew the subscription");
                 }
                 
-                if (!await _moneyService.IsPriceValid(payment.ContractId, (decimal)(payment.Amount * 100)))
+                if (!await _moneyService.IsSubPayed(payment.ContractId))
+                {
+                    return BadRequest("The subscription has been already cancelled");
+                }
+                
+                if (!await _moneyService.IsPriceValid(payment.ContractId, payment.Amount))
                 {
                     return BadRequest("Amount of money should be exactly what is required in the contract");
                 }
 
-                await _moneyService.PayForSubscriptionContract(payment.ContractId, (decimal)(payment.Amount * 100));
+                await _moneyService.PayForSubscriptionContract(payment.ContractId, payment.Amount);
             }
             else
             {
@@ -53,17 +58,17 @@ namespace CodeFirst.Controllers
                     return BadRequest("Time to pay for the contract has passed");
                 }
                 
-                if (!await _moneyService.IsPayedOff(payment.ContractId))
+                if (await _moneyService.IsPayedOff(payment.ContractId))
                 {
                     return BadRequest("This contract is already payed off");
                 }
                 
-                if (!await _moneyService.IsPriceValid(payment.ContractId, (decimal)(payment.Amount * 100)))
+                if (!await _moneyService.IsPriceValid(payment.ContractId, payment.Amount))
                 {
                     return BadRequest("Amount of money is incorrect");
                 }
 
-                await _moneyService.PayForOneTimeContract(payment.ContractId,(decimal)(payment.Amount * 100));
+                await _moneyService.PayForOneTimeContract(payment.ContractId,payment.Amount);
             }
 
             return Ok("Payment processed");
@@ -73,11 +78,7 @@ namespace CodeFirst.Controllers
         [HttpGet("profit")]
         public async Task<IActionResult> GetProfit([FromQuery] ProfitDTO profit)
         {
-            try
-            {
-                await _moneyService.GetNBPRate(profit.Currency);
-            }
-            catch (HttpRequestException e)
+            if(await _moneyService.GetNBPRate(profit.Currency) < 0)
             {
                 return NotFound("Currency not found");
             }
@@ -92,18 +93,15 @@ namespace CodeFirst.Controllers
 
             var profitValue = await _moneyService.GetProfit(profit.IdSoftware, profit.Currency);
             
-            return Ok("Profit: " + profitValue);
+            return Ok("Profit: " + profitValue + " " + profit.Currency);
         }
         
         [HttpGet("predicted-profit")]
         public async Task<IActionResult> GetPredictedProfit([FromQuery] PredictedProfitDTO profit)
         {
             
-            try
-            {
-                await _moneyService.GetNBPRate(profit.Currency);
-            }
-            catch (HttpRequestException e)
+            
+            if(await _moneyService.GetNBPRate(profit.Currency) < 0)
             {
                 return NotFound("Currency not found");
             }
@@ -118,7 +116,7 @@ namespace CodeFirst.Controllers
 
             var profitValue = await _moneyService.GetPredictedProfit(profit.IdSoftware, profit.Currency, profit.PeriodInMonths);
             
-            return Ok("Predicted profit: " + profitValue);
+            return Ok("Predicted profit: " + profitValue + " " + profit.Currency);
         }
     }
 }

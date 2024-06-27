@@ -32,7 +32,7 @@ public class OneTimePaymentDTO
 
     public String DateFrom { get; set; } = string.Empty;
     public String DateTo { get; set; } = string.Empty;
-    public double Price { get; set; }
+    public Decimal Price { get; set; }
     public int UpdatePeriod { get; set; }
     
 }
@@ -53,7 +53,7 @@ public class SubscriptionDTO
     public string Name { get; set; } = string.Empty;
 
     public String DateFrom { get; set; } = string.Empty;
-    public double Price { get; set; }
+    public Decimal Price { get; set; }
     
     
 
@@ -187,7 +187,7 @@ public class PayDTO
     public int ContractId { get; set; }
     
     [Required]
-    public double Amount  { get; set; }
+    public Decimal Amount  { get; set; }
 }
 
 public class ProfitDTO

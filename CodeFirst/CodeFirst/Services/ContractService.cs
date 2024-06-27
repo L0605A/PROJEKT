@@ -95,7 +95,7 @@ namespace CodeFirst.Services
         
         public async Task<OneTimePaymentResponseDTO> CreateContractAsync(OneTimePaymentDTO contractDto)
         {
-            decimal finalPrice = (decimal)(contractDto.Price * 100);
+            decimal finalPrice = contractDto.Price;
 
             var today = DateOnly.FromDateTime(DateTime.Now);
 
@@ -115,6 +115,7 @@ namespace CodeFirst.Services
             finalPrice -= discountAmount;
 
             finalPrice += (contractDto.UpdatePeriod - 1) * 1000;
+            Console.WriteLine(finalPrice);
             
             var contract = new Contract
             {
@@ -145,7 +146,7 @@ namespace CodeFirst.Services
             _context.OneTimePayments.Add(OneTimePayment);
             await _context.SaveChangesAsync();
 
-            contractDto.Price = (double)finalPrice / 100;
+            contractDto.Price = finalPrice;
 
             OneTimePaymentResponseDTO oneTimePaymentDto = new OneTimePaymentResponseDTO()
             {
@@ -160,7 +161,7 @@ namespace CodeFirst.Services
         
          public async Task<SubscriptionResponseDTO> CreateContractAsync(SubscriptionDTO subscriptionDto)
         {
-            decimal finalPrice = (decimal)( subscriptionDto.Price * 100);
+            decimal finalPrice = subscriptionDto.Price;
 
             var today = DateOnly.FromDateTime(DateTime.Now);
 
@@ -174,7 +175,7 @@ namespace CodeFirst.Services
             if (client.Contracts.Any())
             {
                 discountPercentage += 5;
-                subscriptionDto.Price *= 0.95;
+                subscriptionDto.Price *= 0.95m;
             }
 
             var discountAmount = finalPrice * (discountPercentage / 100m);
@@ -189,7 +190,7 @@ namespace CodeFirst.Services
                 Software = await _context.Softwares.Where(s => s.IdSoftware == subscriptionDto.IdSoftware).FirstOrDefaultAsync(),
                 Name = subscriptionDto.Name,
                 DateFrom = DateOnly.ParseExact(subscriptionDto.DateFrom, "dd-MM-yyyy", null),
-                Price = (decimal)( subscriptionDto.Price * 100)
+                Price = subscriptionDto.Price
             };
 
             _context.Contracts.Add(contract);
@@ -210,7 +211,7 @@ namespace CodeFirst.Services
                 IdContract = contract.IdContract,
                 Contract = contract,
                 AmountPaid = finalPrice,
-                PaidOn = today
+                PaidOn =  DateOnly.ParseExact(subscriptionDto.DateFrom, "dd-MM-yyyy", null)
             };
             
             _context.Ledgers.Add(payment);

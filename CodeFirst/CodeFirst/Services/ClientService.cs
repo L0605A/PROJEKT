@@ -165,6 +165,9 @@ namespace CodeFirst.Services
                 .Include(c => c.PersonalClient)
                 .FirstOrDefaultAsync(c => c.IdClient == id && !c.IsDeleted);
 
+            //Console.WriteLine("GOT A CLIENT");
+            //Console.WriteLine(existingClient);
+            
             if (existingClient != null)
             {
                 existingClient.Address = client.Address;
