@@ -30,7 +30,7 @@ namespace CodeFirst.Controllers
             var client = await _clientService.GetClientByIdAsync(id);
             if (client == null)
             {
-                return NotFound();
+                return NotFound("No client with such ID found");
             }
             return Ok(client);
         }
@@ -56,23 +56,43 @@ namespace CodeFirst.Controllers
         {
             if (! await _clientService.ClientExists(id))
             {
-                return BadRequest();
+                return BadRequest("No client with such ID found");
+            }
+            
+            if (await _clientService.CorpoClientExists(id))
+            {
+                return BadRequest("Entered client is corporate, not personal");
+            }
+            
+            if (await _clientService.IsClientDeleted(id))
+            {
+                return NotFound("The client is deleted");
             }
 
             await _clientService.UpdatePersonalClientAsync(id, client);
-            return Ok();
+            return Ok("Updated personal client");
         }
         
         [HttpPut("corporate/{id}")]
         public async Task<IActionResult> UpdateCorporateClient(int id,[FromBody] CorpoEditDTO client)
         {
-            if (! await _clientService.ClientExists(id))
+            if (!await _clientService.ClientExists(id))
             {
-                return BadRequest();
+                return BadRequest("No client with such ID found");
+            }
+            
+            if (! await _clientService.CorpoClientExists(id))
+            {
+                return BadRequest("Entered client is personal, not corporate");
+            }
+            
+            if (await _clientService.IsClientDeleted(id))
+            {
+                return NotFound("The client is deleted");
             }
 
             await _clientService.UpdateCorporateClientAsync(id, client);
-            return NoContent();
+            return Ok("Updated corporate client");
         }
 
         [HttpDelete("{id}")]
@@ -81,16 +101,21 @@ namespace CodeFirst.Controllers
             var client = await _clientService.GetClientByIdAsync(id);
             if (client == null)
             {
-                return NotFound();
+                return NotFound("No client with such ID found");
+            }
+            
+            if (await _clientService.IsClientDeleted(id))
+            {
+                return NotFound("The client is deleted");
             }
 
-            if (client.CorporateClient != null)
+            if (client.CorporateClientInfo != null)
             {
                 return BadRequest("Cannot delete corporate clients.");
             }
 
             await _clientService.SoftDeleteClientAsync(id);
-            return NoContent();
+            return Ok("Removed a client");
         }
     }
 }

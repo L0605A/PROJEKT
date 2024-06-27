@@ -10,8 +10,11 @@ namespace CodeFirst.Services
     {
 
         Task<bool> ClientExists(int id);
-        Task<IEnumerable<Client>> GetAllClientsAsync();
-        Task<Client?> GetClientByIdAsync(int id);
+        Task<bool> IsClientDeleted(int id);
+        Task<bool> CorpoClientExists(int id);
+        
+        Task<IEnumerable<ClientResponseDTO>>  GetAllClientsAsync();
+        Task<ClientResponseDTO?> GetClientByIdAsync(int id);
         Task AddPersonalClientAsync(PersonalClientDTO client);
         Task AddCorporateClientAsync(CorpoClientDTO client);
         Task UpdatePersonalClientAsync(int id, PersonalEditDTO client);
@@ -32,23 +35,72 @@ namespace CodeFirst.Services
         {
             return await _context.Clients.AnyAsync(c => c.IdClient == id);
         }
+        
+        public async Task<bool> CorpoClientExists(int id)
+        {
+            return await _context.CorporateClients.AnyAsync(c => c.IdClient == id);
+        }
+        
+        public async Task<bool> IsClientDeleted(int id)
+        {
+            return await _context.Clients.Where(c => c.IdClient == id).Select(c => c.IsDeleted).FirstOrDefaultAsync();
+        }
 
-        public async Task<IEnumerable<Client>> GetAllClientsAsync()
+
+        public async Task<IEnumerable<ClientResponseDTO>> GetAllClientsAsync()
         {
             return await _context.Clients
                 .Include(c => c.PersonalClient)
                 .Include(c => c.CorporateClient)
                 .Where(c => !c.IsDeleted)
+                .Select(c => new ClientResponseDTO
+                {
+                    ClientId = c.IdClient,
+                    Address = c.Address,
+                    Email = c.Email,
+                    PhoneNumber = c.PhoneNumber,
+                    PersonalClientInfo = c.PersonalClient == null ? null : new PersonalClientResponseDTO
+                    {
+                        Name = c.PersonalClient.Name,
+                        Surname = c.PersonalClient.Surname,
+                        PESEL = c.PersonalClient.PESEL
+                    },
+                    CorporateClientInfo = c.CorporateClient == null ? null : new CorpoClientResponseDTO
+                    {
+                        CorpoName = c.CorporateClient.CorpoName,
+                        KRS = c.CorporateClient.KRS
+                    }
+                })
                 .ToListAsync();
         }
 
-        public async Task<Client?> GetClientByIdAsync(int id)
+        public async Task<ClientResponseDTO?> GetClientByIdAsync(int id)
         {
             return await _context.Clients
-                                 .Include(c => c.PersonalClient)
-                                 .Include(c => c.CorporateClient)
-                                 .FirstOrDefaultAsync(c => c.IdClient == id && !c.IsDeleted);
+                .Include(c => c.PersonalClient)
+                .Include(c => c.CorporateClient)
+                .Where(c => c.IdClient == id && !c.IsDeleted)
+                .Select(c => new ClientResponseDTO
+                {
+                    ClientId = c.IdClient,
+                    Address = c.Address,
+                    Email = c.Email,
+                    PhoneNumber = c.PhoneNumber,
+                    PersonalClientInfo = c.PersonalClient == null ? null : new PersonalClientResponseDTO
+                    {
+                        Name = c.PersonalClient.Name,
+                        Surname = c.PersonalClient.Surname,
+                        PESEL = c.PersonalClient.PESEL
+                    },
+                    CorporateClientInfo = c.CorporateClient == null ? null : new CorpoClientResponseDTO
+                    {
+                        CorpoName = c.CorporateClient.CorpoName,
+                        KRS = c.CorporateClient.KRS
+                    }
+                })
+                .FirstOrDefaultAsync();
         }
+
 
         public async Task AddCorporateClientAsync(CorpoClientDTO client)
         {

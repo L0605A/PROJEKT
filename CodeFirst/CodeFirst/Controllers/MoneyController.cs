@@ -20,45 +20,50 @@ namespace CodeFirst.Controllers
             _moneyService = MoneyService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Pay(int contractId, int amount)
+        [HttpPost("pay-for-a-contract")]
+        public async Task<IActionResult> Pay(PayDTO payment)
         {
-            if (await _moneyService.ContractExists(contractId))
+            if (!await _moneyService.ContractExists(payment.ContractId))
             {
                 return NotFound("No contract found!");
             }
 
-            if (await _moneyService.IsSubscription(contractId))
+            if (await _moneyService.IsSubscription(payment.ContractId))
             {
                 //Handle subs
                 
-                if (await _moneyService.IsTimeValid(contractId))
+                if (!await _moneyService.IsTimeValid(payment.ContractId))
                 {
                     return BadRequest("It's not the time to renew the subscription, or the subscription has been already cancelled");
                 }
                 
-                if (await _moneyService.IsPriceValid(contractId, amount))
+                if (!await _moneyService.IsPriceValid(payment.ContractId, payment.Amount))
                 {
                     return BadRequest("Amount of money should be exactly what is required in the contract");
                 }
 
-                await _moneyService.PayForSubscriptionContract(contractId, amount);
+                await _moneyService.PayForSubscriptionContract(payment.ContractId, payment.Amount);
             }
             else
             {
                 //Handle one times
 
-                if (await _moneyService.IsTimeValid(contractId))
+                if (!await _moneyService.IsTimeValid(payment.ContractId))
                 {
                     return BadRequest("Time to pay for the contract has passed");
                 }
                 
-                if (await _moneyService.IsPriceValid(contractId, amount))
+                if (!await _moneyService.IsPayedOff(payment.ContractId))
+                {
+                    return BadRequest("This contract is already payed off");
+                }
+                
+                if (!await _moneyService.IsPriceValid(payment.ContractId, payment.Amount))
                 {
                     return BadRequest("Amount of money is incorrect");
                 }
 
-                await _moneyService.PayForOneTimeContract(contractId, amount);
+                await _moneyService.PayForOneTimeContract(payment.ContractId, payment.Amount);
             }
 
             return Ok("Payment processed");
@@ -66,54 +71,54 @@ namespace CodeFirst.Controllers
 
 
         [HttpGet("profit")]
-        public async Task<IActionResult> GetProfit(int? IdSoftware ,string currency = "PLN")
+        public async Task<IActionResult> GetProfit([FromQuery] ProfitDTO profit)
         {
             try
             {
-                await _moneyService.GetNBPRate(currency);
+                await _moneyService.GetNBPRate(profit.Currency);
             }
             catch (HttpRequestException e)
             {
                 return NotFound("Currency not found");
             }
             
-            if (IdSoftware.HasValue)
+            if (profit.IdSoftware.HasValue)
             {
-                if (!(await _moneyService.SoftwareExists(IdSoftware)))
+                if (!(await _moneyService.SoftwareExists(profit.IdSoftware)))
                 {
                     return NotFound("No software found");
                 }
             }
 
-            var profit = await _moneyService.GetProfit(IdSoftware, currency);
+            var profitValue = await _moneyService.GetProfit(profit.IdSoftware, profit.Currency);
             
-            return Ok(profit);
+            return Ok("Profit: " + profitValue);
         }
         
         [HttpGet("predicted-profit")]
-        public async Task<IActionResult> GetPredictedProfit(int? IdSoftware, int periodInMonths ,string currency = "PLN")
+        public async Task<IActionResult> GetPredictedProfit([FromQuery] PredictedProfitDTO profit)
         {
             
             try
             {
-                await _moneyService.GetNBPRate(currency);
+                await _moneyService.GetNBPRate(profit.Currency);
             }
             catch (HttpRequestException e)
             {
                 return NotFound("Currency not found");
             }
             
-            if (IdSoftware.HasValue)
+            if (profit.IdSoftware.HasValue)
             {
-                if (!(await _moneyService.SoftwareExists(IdSoftware)))
+                if (!(await _moneyService.SoftwareExists(profit.IdSoftware)))
                 {
                     return NotFound("No software found");
                 }
             }
 
-            var profit = await _moneyService.GetPredictedProfit(IdSoftware, currency, periodInMonths);
+            var profitValue = await _moneyService.GetPredictedProfit(profit.IdSoftware, profit.Currency, profit.PeriodInMonths);
             
-            return Ok(profit);
+            return Ok("Predicted profit: " + profitValue);
         }
     }
 }

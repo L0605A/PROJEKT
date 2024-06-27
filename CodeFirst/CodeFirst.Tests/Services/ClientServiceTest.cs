@@ -61,7 +61,7 @@ namespace CodeFirst.Tests.Services
 
             //Assert
             Assert.IsNotNull(client);
-            Assert.AreEqual(1, client.IdClient);
+            Assert.AreEqual("client1@example.com", client.Email);
         }
 
         [TestMethod]

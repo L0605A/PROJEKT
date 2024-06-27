@@ -1,4 +1,5 @@
-﻿using CodeFirst.Models;
+﻿using System.Globalization;
+using CodeFirst.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CodeFirst.Services
@@ -8,6 +9,8 @@ namespace CodeFirst.Services
         Task<bool> ClientExists(int ID);
         
         Task<bool> SoftwareExists(int ID);
+        
+        Task<bool> DateValid(string date);
 
         Task<bool> ClientHasContract(int idClient, int idSotware);
         
@@ -33,7 +36,13 @@ namespace CodeFirst.Services
 
         public async Task<bool> ClientExists(int ID)
         {
-            return await _context.Clients.AnyAsync(c => c.IdClient == ID);
+            return await _context.Clients.AnyAsync(c => c.IdClient == ID && c.IsDeleted == false);
+        }
+        
+        public async Task<bool> DateValid(string date)
+        {
+            DateTime temp;
+            return DateTime.TryParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out temp);
         }
 
         public async Task<bool> SoftwareExists(int ID)
@@ -164,7 +173,8 @@ namespace CodeFirst.Services
             var client = await _context.Clients.Include(c => c.Contracts).FirstOrDefaultAsync(c => c.IdClient == subscriptionDto.IdClient);
             if (client.Contracts.Any())
             {
-                discountPercentage += 5; 
+                discountPercentage += 5;
+                subscriptionDto.Price = (decimal)((double)subscriptionDto.Price * 0.95);
             }
 
             var discountAmount = finalPrice * (discountPercentage / 100m);

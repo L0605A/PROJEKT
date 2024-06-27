@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CodeFirst.Models;
 
 public class DiscountDTO
 {
-        
     [Required]
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
@@ -24,8 +22,6 @@ public class DiscountDTO
     public String DateTo { get; set; } = string.Empty;
 
 }
-
-
 
 public class OneTimePaymentDTO
 {
@@ -71,6 +67,39 @@ public class SubscriptionResponseDTO
     public SubscriptionDTO Subscription { get; set; }
     
 }
+
+public class ClientResponseDTO
+{
+    public int ClientId { get; set; }
+    
+    public string Address { get; set; } = string.Empty;
+    
+    public string Email { get; set; } = string.Empty;
+    
+    public string PhoneNumber { get; set; } = string.Empty;
+    
+    public CorpoClientResponseDTO CorporateClientInfo { get; set; }
+    
+    public PersonalClientResponseDTO PersonalClientInfo { get; set; }
+}
+
+public class CorpoClientResponseDTO
+{
+    public string CorpoName { get; set; } = string.Empty;
+
+    public Decimal KRS { get; set; }
+}
+
+public class PersonalClientResponseDTO
+{
+    public string Name { get; set; } = string.Empty;
+    
+    public string Surname { get; set; } = string.Empty;
+    
+    public Decimal PESEL { get; set; }
+}
+
+
 
 public class CorpoClientDTO
 {
@@ -150,4 +179,32 @@ public class PersonalEditDTO
 
     [Required]
     public string Surname { get; set; } = string.Empty;
+}
+
+public class PayDTO
+{
+    [Required]
+    public int ContractId { get; set; }
+    
+    [Required]
+    public int Amount  { get; set; }
+}
+
+public class ProfitDTO
+{
+    public int? IdSoftware { get; set; }
+
+    [Required] 
+    public string Currency { get; set; } = "PLN";
+}
+
+public class PredictedProfitDTO
+{
+    public int? IdSoftware { get; set; }
+    
+    [Required] 
+    public int PeriodInMonths { get; set; }
+
+    [Required] 
+    public string Currency { get; set; } = "PLN";
 }

@@ -11,6 +11,8 @@ namespace CodeFirst.Services
     {
         Task<bool> ContractExists(int ID);
         
+        Task<bool> IsPayedOff(int ID);
+        
         Task<bool> SoftwareExists(int? ID);
         
         Task<bool> IsSubscription(int ID);
@@ -44,6 +46,14 @@ namespace CodeFirst.Services
         public async Task<bool> ContractExists(int ID)
         {
             return await _context.Contracts.AnyAsync(c => c.IdContract == ID);
+        }
+        
+        public async Task<bool> IsPayedOff(int ID)
+        {
+            var price = await _context.Contracts.Where(c => c.IdContract == ID).Select(c => c.Price).FirstOrDefaultAsync();
+            var paid = await _context.Ledgers.Where(l => l.IdContract == ID).SumAsync(l => l.AmountPaid);
+
+            return price == paid;
         }
         
         public async Task<bool> SoftwareExists(int? ID)

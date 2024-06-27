@@ -20,12 +20,12 @@ namespace CodeFirst.Controllers
         {
             var token = _authService.Authenticate(loginRequest.Username, loginRequest.Password);
 
-            if (token == null)
+            if (token.Result == null)
             {
-                return Unauthorized(new { message = "Username or password is incorrect" });
+                return Unauthorized("Username or password is incorrect");
             }
 
-            return Ok(new { token });
+            return Ok("Bearer " +token.Result);
         }
     }
 }

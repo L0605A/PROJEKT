@@ -19,36 +19,48 @@ namespace CodeFirst.Controllers
         }
         
 
-        [HttpPost("one-time-payment")]
+        [HttpPost("create-one-time-payment")]
         public async Task<IActionResult> AddOneTimePaymentContract(OneTimePaymentDTO contractDto)
         {
             //Check if client exists
             if (!await _contractService.ClientExists(contractDto.IdClient))
             {
-                return NotFound(new { Message = "Client not found." });
+                return NotFound("Client not found." );
             }
 
             //Check if software exists
             if (!await _contractService.SoftwareExists(contractDto.IdSoftware))
             {
-                return NotFound(new { Message = "Software not found." });
+                return NotFound("Software not found." );
             }
-
+            
             //Check if client already has an active contract for this software
             if (await _contractService.ClientHasContract(contractDto.IdClient, contractDto.IdSoftware))
             {
-                return Conflict(new { Message = "Client already has an active contract for this software." });
+                return Conflict("Client already has an active contract for this software." );
             }
 
+            //Check if price for the contract is valid
+            if (!(contractDto.Price > 0))
+            {
+                return BadRequest("Price is invalid" );
+            }
+            
+            //Check if price for the contract is valid
+            if (!await (_contractService.DateValid(contractDto.DateFrom)) || !await (_contractService.DateValid(contractDto.DateTo)))
+            {
+                return BadRequest("Dates should be in format \"dd-MM-yyy\"" );
+            }
+            
             //Check if the period is correct
             if (!await _contractService.PeriodCorrect(DateOnly.ParseExact(contractDto.DateFrom , "dd-MM-yyyy", null), DateOnly.ParseExact(contractDto.DateTo , "dd-MM-yyyy", null)))
             {
-                return BadRequest(new { Message = "The contract period must be between 3 and 30 days." });
+                return BadRequest("The contract period must be between 3 and 30 days." );
             }
 
             if (!await _contractService.UpdatePeriodCorrect(contractDto.UpdatePeriod))
             {
-                return BadRequest(new { Message = "The update period must be between 1 and 4 years." });
+                return BadRequest("The update period must be between 1 and 4 years." );
             }
             
             //Finally, create the contract
@@ -57,30 +69,43 @@ namespace CodeFirst.Controllers
         }
         
         
-        [HttpPost("subscription")]
+        [HttpPost("create-subscription")]
         public async Task<IActionResult> AddSubscriptionContract(SubscriptionDTO contractDto)
         {
             //Check if client exists
             if (!await _contractService.ClientExists(contractDto.IdClient))
             {
-                return NotFound(new { Message = "Client not found." });
+                return NotFound("Client not found." );
             }
 
             //Check if software exists
             if (!await _contractService.SoftwareExists(contractDto.IdSoftware))
             {
-                return NotFound(new { Message = "Software not found." });
+                return NotFound("Software not found." );
             }
 
             //Check if client already has an active contract for this software
             if (await _contractService.ClientHasContract(contractDto.IdClient, contractDto.IdSoftware))
             {
-                return Conflict(new { Message = "Client already has an active contract for this software." });
+                return Conflict("Client already has an active contract for this software." );
+            }
+            
+            //Check if price for the contract is valid
+            if (!(contractDto.Price > 0))
+            {
+                return BadRequest("Price is invalid" );
+            }
+            
+                        
+            //Check if price for the contract is valid
+            if (!await (_contractService.DateValid(contractDto.DateFrom)))
+            {
+                return BadRequest("Dates should be in format \"dd-MM-yyy\"" );
             }
            
             if (! ( await  _contractService.RenewalPeriodCorrect(contractDto.RenevalTimeInMonths)))
             {
-                return BadRequest(new { Message = "Renewal time must be between 1 and 12 months." });
+                return BadRequest("Renewal time must be between 1 and 12 months.");
             }
 
             //Finally, create the contract
