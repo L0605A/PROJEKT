@@ -55,6 +55,12 @@ namespace CodeFirst.Controllers
             }
             
             //Check if the period is correct
+            if (DateOnly.ParseExact(contractDto.DateFrom , "dd-MM-yyyy", null) > DateOnly.ParseExact(contractDto.DateTo , "dd-MM-yyyy", null))
+            {
+                return BadRequest("DateFrom should be before DateTo" );
+            }
+            
+            //Check if the period is correct
             if (!await _contractService.PeriodCorrect(DateOnly.ParseExact(contractDto.DateFrom , "dd-MM-yyyy", null), DateOnly.ParseExact(contractDto.DateTo , "dd-MM-yyyy", null)))
             {
                 return BadRequest("The contract period must be between 3 and 30 days." );

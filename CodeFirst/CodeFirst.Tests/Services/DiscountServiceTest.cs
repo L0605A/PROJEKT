@@ -105,5 +105,78 @@ namespace CodeFirst.Tests.Services
             Assert.AreEqual(DateOnly.ParseExact("01-01-2024", "dd-MM-yyyy", null), result.DateFrom);
             Assert.AreEqual(DateOnly.ParseExact("31-12-2024", "dd-MM-yyyy", null), result.DateTo);
         }
+        
+                [TestMethod]
+        public async Task AddDiscountAsync_ShouldReturnError_WhenDatesAreInvalid()
+        {
+            // Arrange
+            var discountDTO = new DiscountDTO
+            {
+                Name = "InvalidDiscount",
+                Offer = "InvalidOffer",
+                Amt = 50,
+                DateFrom = "2024-01-01",
+                DateTo = "2024-12-31"
+            };
+
+            // Act & Assert
+            await Assert.ThrowsExceptionAsync<FormatException>(async () => await _discountService.AddDiscountAsync(discountDTO));
+        }
+
+        [TestMethod]
+        public async Task DateValid_ShouldReturnTrue_ForValidDate()
+        {
+            // Arrange
+            var validDate = "28-06-2024";
+
+            // Act
+            var result = await _discountService.DateValid(validDate);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task DateValid_ShouldReturnFalse_ForInvalidDate()
+        {
+            // Arrange
+            var invalidDate = "2024-06-28";
+
+            // Act
+            var result = await _discountService.DateValid(invalidDate);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+        
+        [TestMethod]
+        public async Task AddDiscountAsync_ShouldAddMultipleDiscounts_WhenDatesDoNotOverlap()
+        {
+            // Arrange
+            _context.Discounts.AddRange(new List<Discount>
+            {
+                new Discount { Name = "NonOverlappingDiscount1", Offer = "Offer1", Amt = 10, DateFrom = DateOnly.ParseExact("01-01-2024", "dd-MM-yyyy", null), DateTo = DateOnly.ParseExact("31-01-2024", "dd-MM-yyyy", null) },
+                new Discount { Name = "NonOverlappingDiscount2", Offer = "Offer2", Amt = 20, DateFrom = DateOnly.ParseExact("01-02-2024", "dd-MM-yyyy", null), DateTo = DateOnly.ParseExact("28-02-2024", "dd-MM-yyyy", null) }
+            });
+            await _context.SaveChangesAsync();
+
+            var newDiscountDTO = new DiscountDTO
+            {
+                Name = "NonOverlappingDiscount3",
+                Offer = "Offer3",
+                Amt = 30,
+                DateFrom = "01-03-2024",
+                DateTo = "31-03-2024"
+            };
+
+            // Act
+            var result = await _discountService.AddDiscountAsync(newDiscountDTO);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual("NonOverlappingDiscount3", result.Name);
+            Assert.AreEqual("Offer3", result.Offer);
+            Assert.AreEqual(30, result.Amt);
+        }
     }
 }

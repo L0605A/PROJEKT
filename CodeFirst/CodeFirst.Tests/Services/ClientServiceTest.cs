@@ -205,6 +205,110 @@ namespace CodeFirst.Tests.Services
             //Assert
             Assert.IsTrue(client.IsDeleted);
         }
+         [TestMethod]
+        public async Task ClientExists_ShouldReturnTrue_WhenClientExists()
+        {
+            //Act
+            var exists = await _clientService.ClientExists(1);
+
+            //Assert
+            Assert.IsTrue(exists);
+        }
+
+        [TestMethod]
+        public async Task ClientExists_ShouldReturnFalse_WhenClientDoesNotExist()
+        {
+            //Act
+            var exists = await _clientService.ClientExists(99);
+
+            //Assert
+            Assert.IsFalse(exists);
+        }
+        [TestMethod]
+        public async Task CorpoClientExists_ShouldReturnFalse_WhenCorporateClientDoesNotExist()
+        {
+            //Act
+            var exists = await _clientService.CorpoClientExists(99);
+
+            //Assert
+            Assert.IsFalse(exists);
+        }
+
+        [TestMethod]
+        public async Task IsClientDeleted_ShouldReturnFalse_WhenClientIsNotDeleted()
+        {
+            //Act
+            var isDeleted = await _clientService.IsClientDeleted(1);
+
+            //Assert
+            Assert.IsFalse(isDeleted);
+        }
+
+        [TestMethod]
+        public async Task IsClientDeleted_ShouldReturnTrue_WhenClientIsDeleted()
+        {
+            //Arrange
+            await _clientService.SoftDeleteClientAsync(1);
+
+            //Act
+            var isDeleted = await _clientService.IsClientDeleted(1);
+
+            //Assert
+            Assert.IsTrue(isDeleted);
+        }
+
+        [TestMethod]
+        public async Task SoftDeleteClientAsync_ShouldNotDeleteNonExistentClient()
+        {
+            //Act
+            await _clientService.SoftDeleteClientAsync(99);
+            var client = await _context.Clients.FindAsync(99);
+
+            //Assert
+            Assert.IsNull(client);
+        }
+
+        [TestMethod]
+        public async Task UpdatePersonalClientAsync_ShouldNotUpdateNonExistentClient()
+        {
+            //Arrange
+            var personalEditDTO = new PersonalEditDTO
+            {
+                Address = "Updated Address",
+                Email = "updatedemail@example.com",
+                PhoneNumber = "1234567890",
+                Name = "UpdatedName",
+                Surname = "UpdatedSurname"
+            };
+
+            //Act
+            await _clientService.UpdatePersonalClientAsync(99, personalEditDTO);
+            var client = await _context.Clients.FindAsync(99);
+
+            //Assert
+            Assert.IsNull(client);
+        }
+
+        [TestMethod]
+        public async Task UpdateCorporateClientAsync_ShouldNotUpdateNonExistentClient()
+        {
+            //Arrange
+            var corporateEditDTO = new CorpoEditDTO
+            {
+                Address = "Updated Address",
+                Email = "updatedemail@example.com",
+                PhoneNumber = "9876543210",
+                CorpoName = "UpdatedCorpoName",
+            };
+
+            //Act
+            await _clientService.UpdateCorporateClientAsync(99, corporateEditDTO);
+            var client = await _context.Clients.FindAsync(99);
+
+            //Assert
+            Assert.IsNull(client);
+        }
+    
 
     }
 }

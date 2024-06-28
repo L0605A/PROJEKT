@@ -223,5 +223,106 @@ namespace CodeFirst.Tests.Services
             Assert.IsNotNull(result);
             Assert.AreEqual(2, result.Subscription.IdClient);
         }
+        
+
+        [TestMethod]
+        public async Task DateValid_ShouldReturnTrue_WhenDateIsValid()
+        {
+            //Arrange
+            var validDate = "28-06-2024";
+
+            //Act
+            var result = await _contractService.DateValid(validDate);
+
+            //Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task DateValid_ShouldReturnFalse_WhenDateIsInvalid()
+        {
+            //Arrange
+            var invalidDate = "2024-06-28";
+
+            //Act
+            var result = await _contractService.DateValid(invalidDate);
+
+            //Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task UpdatePeriodCorrect_ShouldReturnTrue_WhenUpdatePeriodIsCorrect()
+        {
+            //Act
+            var result = await _contractService.UpdatePeriodCorrect(3);
+
+            //Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public async Task UpdatePeriodCorrect_ShouldReturnFalse_WhenUpdatePeriodIsIncorrect()
+        {
+            //Act
+            var result = await _contractService.UpdatePeriodCorrect(5);
+
+            //Assert
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task CreateContractAsync_ShouldApplyDiscount_WhenDiscountIsAvailable()
+        {
+            //Arrange
+            _context.Discounts.Add(new Discount { DateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)), DateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(1)), Amt = 10 });
+            await _context.SaveChangesAsync();
+
+            var contractDto = new OneTimePaymentDTO
+            {
+                IdClient = 1,
+                IdSoftware = 1,
+                Name = "DiscountedContract",
+                DateFrom = DateOnly.FromDateTime(DateTime.Now).ToString("dd-MM-yyyy"),
+                DateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(20)).ToString("dd-MM-yyyy"),
+                Price = 2000,
+                Version = "1.0",
+                UpdatePeriod = 1
+            };
+
+            //Act
+            var result = await _contractService.CreateContractAsync(contractDto);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.oneTimePayment.Price < 2000);
+        }
+
+        [TestMethod]
+        public async Task CreateContractAsync_ShouldApplyAdditionalDiscount_WhenClientHasPreviousContracts()
+        {
+            //Arrange
+            _context.Discounts.Add(new Discount { DateFrom = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)), DateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(1)), Amt = 10 });
+            await _context.SaveChangesAsync();
+
+            var contractDto = new OneTimePaymentDTO
+            {
+                IdClient = 1,
+                IdSoftware = 1,
+                Name = "LoyalClientContract",
+                DateFrom = DateOnly.FromDateTime(DateTime.Now).ToString("dd-MM-yyyy"),
+                DateTo = DateOnly.FromDateTime(DateTime.Now.AddDays(20)).ToString("dd-MM-yyyy"),
+                Price = 2000,
+                Version = "1.0",
+                UpdatePeriod = 1
+            };
+
+            //Act
+            var result = await _contractService.CreateContractAsync(contractDto);
+
+            //Assert
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.oneTimePayment.Price < 2000);
+        }
     }
 }
