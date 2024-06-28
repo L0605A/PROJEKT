@@ -93,7 +93,7 @@ namespace CodeFirst.Controllers
 
             var profitValue = await _moneyService.GetProfit(profit.IdSoftware, profit.Currency);
             
-            return Ok("Profit: " + profitValue + " " + profit.Currency);
+            return Ok("Profit: " + Math.Round(profitValue, 2) + " " + profit.Currency);
         }
         
         [HttpGet("predicted-profit")]
@@ -106,6 +106,11 @@ namespace CodeFirst.Controllers
                 return NotFound("Currency not found");
             }
             
+            if(profit.PeriodInMonths <= 0)
+            {
+                return NotFound("Period not valid");
+            }
+            
             if (profit.IdSoftware.HasValue)
             {
                 if (!(await _moneyService.SoftwareExists(profit.IdSoftware)))
@@ -116,7 +121,7 @@ namespace CodeFirst.Controllers
 
             var profitValue = await _moneyService.GetPredictedProfit(profit.IdSoftware, profit.Currency, profit.PeriodInMonths);
             
-            return Ok("Predicted profit: " + profitValue + " " + profit.Currency);
+            return Ok("Predicted profit: " + Math.Round(profitValue, 2) + " " + profit.Currency);
         }
     }
 }

@@ -78,7 +78,8 @@ namespace CodeFirst.Models
             );
 
             modelBuilder.Entity<Contract>().HasData(
-                new Contract { IdContract = 1, IdClient = 1, IdSoftware = 1, Name = "Contract1", DateFrom = DateOnly.FromDateTime(DateTime.Now), Price = 1000m }
+                new Contract { IdContract = 1, IdClient = 1, IdSoftware = 1, Name = "Contract1", DateFrom = DateOnly.FromDateTime(DateTime.Now), Price = 1000m },
+                new Contract { IdContract = 2, IdClient = 2, IdSoftware = 1, Name = "Contract2", DateFrom = DateOnly.FromDateTime(DateTime.Now), Price = 1000m }
             );
 
             modelBuilder.Entity<Ledger>().HasData(
@@ -94,7 +95,7 @@ namespace CodeFirst.Models
             );
 
             modelBuilder.Entity<Subscription>().HasData(
-                new Subscription { IdContract = 1, RenevalTimeInMonths = 12 }
+                new Subscription { IdContract = 2, RenevalTimeInMonths = 12 }
             );
         }
     }

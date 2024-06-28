@@ -229,6 +229,7 @@ namespace CodeFirst.Tests.Services
             var oneTimePayment2 = new OneTimePayment { IdContract = 2, Status = "active"};
             var oneTimePayment3 = new OneTimePayment { IdContract = 3, Status = "inactive"};
             
+                
             var subscription = new Subscription { IdContract = 4, RenevalTimeInMonths = 6 };
             
             var ledger1 = new Ledger { IdContract = 1, AmountPaid = 100 };

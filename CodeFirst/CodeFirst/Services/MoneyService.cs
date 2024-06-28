@@ -265,6 +265,7 @@ namespace CodeFirst.Services
                     {
                         profit += ledger.AmountPaid;
                     }
+                    Console.WriteLine(profit);
                 }
             }
             
@@ -294,15 +295,14 @@ namespace CodeFirst.Services
                 int monthsInBetween = (subEnd.Year - subStart.Year) * 12 + subEnd.Month - subStart.Month;
 
                 int totalPeriods = monthsInBetween / sub.RenevalTimeInMonths;
-
-                Console.WriteLine(await _context.Ledgers.Where(l => l.IdContract == sub.IdContract).OrderByDescending(l => l.PaidOn).Select(l => l.AmountPaid)
-                    .FirstOrDefaultAsync());
                 
                 profit += await _context.Ledgers.Where(l => l.IdContract == sub.IdContract).OrderByDescending(l => l.PaidOn).Select(l => l.AmountPaid)
                     .FirstOrDefaultAsync();
                 
+                Console.WriteLine(profit);
                 
                 profit += contract.Price * (totalPeriods);
+                Console.WriteLine(profit);
             }
             
 
